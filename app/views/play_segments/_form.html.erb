@@ -1,0 +1,17 @@
+<%= form_for(@play_segment) do |f| %>
+  <% if @play_segment.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@play_segment.errors.count, "error") %> prohibited this play_segment from being saved:</h2>
+
+      <ul>
+      <% @play_segment.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

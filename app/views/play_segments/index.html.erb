@@ -1,0 +1,25 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Listing Play Segments</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @play_segments.each do |play_segment| %>
+      <tr>
+        <td><%= link_to 'Show', play_segment %></td>
+        <td><%= link_to 'Edit', edit_play_segment_path(play_segment) %></td>
+        <td><%= link_to 'Destroy', play_segment, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Play segment', new_play_segment_path %>
