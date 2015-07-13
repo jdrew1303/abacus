@@ -1,6 +1,7 @@
 class Event < ActiveRecord::Base
   belongs_to :medium
   belongs_to :event_type
+  has_one :play_segment
 
   def type
     event_type.key.to_sym
@@ -45,25 +46,36 @@ class Event < ActiveRecord::Base
   end
 
   def self.create_with_message(app, message)
-    message[:event_type_id] = EventType.find_by(app_id: app.id, key: message[:event_type]).id
-    message[:medium_id] = Medium.create_with(url: message[:url], duration: message[:duration]).find_or_create_by(app_id: app.id, media_id: message[:media_id]).id
+    # Find medium
+    medium = Medium.create_with(url: message[:url], duration: message[:duration]).find_or_create_by(app_id: app.id, media_id: message[:media_id])
+    if (medium.duration != message[:duration])
+      # Update duration if necessary
+      medium.duration = message[:duration]
+      medium.save!
+    end
+    message[:medium_id] = medium.id
 
+    # Find event type
+    message[:event_type_id] = EventType.find_by(app_id: app.id, key: message[:event_type]).id
+
+    # Build event
     @event = Event.new(event_type_id: message[:event_type_id],
                        user_id: message[:user_id],
                        medium_id: message[:medium_id],
                        timestamp: message[:timestamp])
 
+    # Process event
     case @event.type
     when :comment
       @event.process_comment(message[:text])
       @event.save!
     when :pause
-      # Get a list of all play/pause events for this medium, and make sure the last event was a play to pair with this pause
+      # Get the last play/pause event for this medium
       @last_event = @event.last_event(['play', 'pause'])
 
       case @last_event.try(:type)
       when :play
-        # save this pause event
+        # if the last event was a play, save this pause event
         @event.save!
 
         if @event.timestamp - @last_event.timestamp > 0
@@ -71,11 +83,11 @@ class Event < ActiveRecord::Base
           PlaySegment.create!(start_event_id: @last_event.id, end_event_id: @event.id)
         end
       when :pause
-        # This is a heartbeat. Update the last pause heartbeat to have this new timestamp
+        # Last event was pause. This is a heartbeat. Update the last pause heartbeat to have this new timestamp
         @last_event.timestamp = @event.timestamp
         @last_event.save!
 
-        unless PlaySegment.find_by(end_event_id: @last_event.id).exists?
+        unless PlaySegment.exists?(end_event_id: @last_event.id)
           # TODO what happens if this pause event is not part of a playsegment? assuming that shouldn't happen for now
           raise Exceptionally::ExpectationFailed.new('No play segment found for this pause')
         end

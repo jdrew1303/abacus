@@ -1,3 +1,3 @@
 class AppSerializer < ActiveModel::Serializer
-  attributes :name, :key, :domains, :admin_id
+  attributes :id, :name, :key, :domains, :admin_id
 end
