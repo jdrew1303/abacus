@@ -1,3 +1,4 @@
 class EventSerializer < ActiveModel::Serializer
-  attributes :id
+  attributes :type, :label, :weight, :timestamp, :formatted_timestamp, :user_id
+  has_one :medium
 end

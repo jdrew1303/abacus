@@ -1,3 +1,3 @@
 class EventTypeSerializer < ActiveModel::Serializer
-  attributes :id
+  attributes :key, :weight, :label, :app_id
 end

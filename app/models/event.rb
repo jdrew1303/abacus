@@ -25,6 +25,10 @@ class Event < ActiveRecord::Base
     self.optional_data = new_data
   end
 
+  def formatted_timestamp
+    "#{(timestamp/60).to_i}:#{timestamp % 60 < 10 ? '0' : ''}#{timestamp % 60}"
+  end
+
   def process_comment(text)
     # Adjust weight based on sentiment
     self.data = {text: text}
