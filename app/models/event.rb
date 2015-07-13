@@ -41,10 +41,13 @@ class Event < ActiveRecord::Base
   end
 
   def self.create_with_message(app, message)
-    event_type = app.event_types.find_by(key: message[:event_type])
-    message[:medium_id] = app.media.create_with(media_params(message)).find_or_create_by(media_id: message[:media_id]).id
+    message[:event_type_id] = EventType.find_by(app_id: app.id, key: message[:event_type]).id
+    message[:medium_id] = Medium.create_with(url: message[:url], duration: message[:duration]).find_or_create_by(app_id: app.id, media_id: message[:media_id]).id
 
-    @event = event_type.events.build(event_params(message))
+    @event = Event.new(event_type_id: message[:event_type_id],
+                       user_id: message[:user_id],
+                       medium_id: message[:medium_id],
+                       timestamp: message[:timestamp])
 
     case @event.type
     when :comment
@@ -82,14 +85,4 @@ class Event < ActiveRecord::Base
 
     @event
   end
-
-  private
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def self.event_params(message)
-      message.permit(:user_id, :medium_id, :timestamp)
-    end
-
-    def self.media_params(message)
-      message.permit(:url, :duration)
-    end
 end

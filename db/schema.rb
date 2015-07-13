@@ -34,7 +34,7 @@ ActiveRecord::Schema.define(version: 20150707223806) do
   add_index "apps", ["key"], name: "index_apps_on_key", unique: true, using: :btree
 
   create_table "event_types", force: :cascade do |t|
-    t.integer  "app_id"
+    t.integer  "app_id",                 null: false
     t.string   "key",                    null: false
     t.integer  "weight",     default: 0
     t.string   "label"
@@ -45,11 +45,11 @@ ActiveRecord::Schema.define(version: 20150707223806) do
   add_index "event_types", ["app_id", "key"], name: "index_event_types_on_app_id_and_key", unique: true, using: :btree
 
   create_table "events", force: :cascade do |t|
-    t.integer  "event_type_id"
-    t.integer  "medium_id"
-    t.integer  "user_id"
+    t.integer  "event_type_id", null: false
+    t.integer  "medium_id",     null: false
+    t.string   "user_id"
+    t.integer  "timestamp",     null: false
     t.integer  "weight"
-    t.integer  "timestamp"
     t.text     "optional_data"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
@@ -58,10 +58,10 @@ ActiveRecord::Schema.define(version: 20150707223806) do
   add_index "events", ["event_type_id", "medium_id", "user_id"], name: "index_events_on_event_type_id_and_medium_id_and_user_id", using: :btree
 
   create_table "media", force: :cascade do |t|
-    t.integer  "app_id"
-    t.integer  "media_id",   null: false
+    t.integer  "app_id",     null: false
+    t.string   "media_id",   null: false
+    t.integer  "duration",   null: false
     t.string   "url"
-    t.integer  "duration"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

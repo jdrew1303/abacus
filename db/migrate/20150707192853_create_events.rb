@@ -1,11 +1,11 @@
 class CreateEvents < ActiveRecord::Migration
   def change
     create_table :events do |t|
-      t.belongs_to :event_type
-      t.belongs_to :medium
-      t.integer :user_id
+      t.belongs_to :event_type, null: false
+      t.belongs_to :medium, null: false
+      t.string :user_id
+      t.integer :timestamp, null: false
       t.integer :weight
-      t.integer :timestamp
       t.text :optional_data
 
       t.timestamps null: false

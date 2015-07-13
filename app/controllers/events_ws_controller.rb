@@ -1,5 +1,7 @@
 class EventsWsController < WebSocketsController
   def create
-    Event.create_with_message(@app, message)
+    @event = Event.create_with_message(@app, message)
+
+    trigger_success({message: @event.type, status: 201})
   end
 end

@@ -9,5 +9,7 @@ class ApplicationController < ActionController::Base
     @app = App.find_by_key(key)
 
     raise Exceptionally::Unauthorized.new('Invalid app key for origin') unless @app.try(:domain_is_whitelisted, origin)
+
+    @app
   end
 end

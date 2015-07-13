@@ -7,4 +7,4 @@
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
 @admin = Admin.create!(name: 'Admin User')
-@app = @admin.apps.create!(name: 'Demo App', domains: 'localhost')
+@app = @admin.apps.create!(name: 'Demo App', domains: 'localhost:4000')

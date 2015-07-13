@@ -1,8 +1,7 @@
 class CreateEventTypes < ActiveRecord::Migration
   def change
     create_table :event_types do |t|
-      t.belongs_to :app
-
+      t.belongs_to :app, null: false
       t.string :key, null: false
       t.integer :weight, default: 0
       t.string :label

@@ -5,15 +5,15 @@ class WebSocketsController < WebsocketRails::BaseController
 
   def exceptionally_wrapper
     yield
-  rescue Exceptionally::Error => error
+  rescue Error => error
     exceptionally_handler(error)
   end
 
   def authenticate_app
-    authenticate_app_with_key_and_origin(event.channel, message[:origin])
+    @app = authenticate_app_with_key_and_origin(message[:app_key], message[:origin])
   end
 
   def render_error(message, status)
-    trigger_failure({error: message, status: status})
+    trigger_failure({message: message, status: status})
   end
 end
