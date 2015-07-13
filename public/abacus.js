@@ -21,6 +21,7 @@ var abacus = (function() {
     console.log("Abacus: " + response.message + " (" + response.status + ")");
   }
 
+  // constructs and sends websocket messages to abacus server
   , report = function(eventName, timestamp, duration, mediaId, userId, props) {
     var message = {
       origin: window.location.host,
@@ -37,9 +38,16 @@ var abacus = (function() {
       for (var attrname in props) { message[attrname] = props[attrname]; }
     }
 
+    if (dispatcher.connection_stale()) {
+      // try reconnecting if needed
+      dispatcher.reconnect();
+    }
+
+    // save event
     dispatcher.trigger('event.create', message, successCallback, errorCallback);
   }
 
+  // getter/setter for abacus api key
   , apiKey = function(newApiKey) {
     if (newApiKey) {
       window.abacusApiKey = newApiKey;
@@ -51,6 +59,8 @@ var abacus = (function() {
   return {
     apiKey: apiKey,
     report: report,
+
+    // getter/setter for debug, prints success messages to console if true
     debug: function(setDebug) {
       if (setDebug !== undefined) {
         debug = !!setDebug;
@@ -59,16 +69,20 @@ var abacus = (function() {
       return debug;
     },
 
+    // add listeners to various HTML5 video events and report them to abacus
     register: function(video, mediaId, userId) {
       var currKnownTime = 0,
-          lastKnownTime = 0;
+          lastKnownTime = 0,
+          lastHearbeat = 0;
 
       video.addEventListener("play", function() {
         report("play", video.currentTime, video.duration, mediaId, userId);
+        lastHearbeat = new Date().getTime();
       });
 
       video.addEventListener("pause", function() {
         report("pause", video.currentTime, video.duration, mediaId, userId);
+        lastHearbeat = new Date().getTime();
       });
 
       video.addEventListener("seeked", function() {
@@ -77,13 +91,14 @@ var abacus = (function() {
           // paused and played again, so we can start a new play segment
           report("pause", lastKnownTime, video.duration, mediaId, userId);
           report("play", video.currentTime, video.duration, mediaId, userId);
+          lastHearbeat = new Date().getTime();
         }
       });
 
       video.addEventListener("volumechange", function() {
-        if (video.currentTime > 3) {
+        if (video.currentTime > 3 || video.volume < 0.1) {
           // Ignore volume changes from the first 3 seconds, since that
-          // says little about the video itself
+          // says little about the video itself, unless the video is muted
           report("volumechange", video.currentTime, video.duration, mediaId, userId, {volume: video.volume});
         }
       });
@@ -93,6 +108,12 @@ var abacus = (function() {
         if (!video.seeking && Math.floor(video.currentTime) !== Math.floor(currKnownTime)) {
           lastKnownTime = currKnownTime;
           currKnownTime = video.currentTime;
+        }
+
+        // send a heartbeat every 5 seconds while video is playing
+        if (!video.paused && !video.seeking && lastHearbeat < new Date().getTime() - 5000) {
+          report("pause", video.currentTime, video.duration, mediaId, userId);
+          lastHearbeat = new Date().getTime();
         }
       });
     }

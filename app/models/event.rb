@@ -19,9 +19,9 @@ class Event < ActiveRecord::Base
   end
 
   def data=(new_data)
-    @data = new_data
+    @data = nil # clear memo
 
-    new_data = JSON.stringify(new_data)
+    new_data = JSON.generate(new_data)
     self.optional_data = new_data
   end
 
@@ -83,6 +83,10 @@ class Event < ActiveRecord::Base
         # The heart's beating, but the video was never played!
         raise Exceptionally::ExpectationFailed.new('No corresponding play event for this pause')
       end
+    when :volumechange
+      @event.data = {volume: message[:volume]}
+      @event.weight = -1 if message[:volume] < 0.1 # user has effectively muted
+      @event.save!
     else
       @event.save!
     end

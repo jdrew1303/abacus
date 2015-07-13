@@ -22,7 +22,7 @@ class App < ActiveRecord::Base
     event_types.create!(key: 'play', label: %q{'played the video'})
     event_types.create!(key: 'pause', label: %q{'paused the video'})
     event_types.create!(key: 'comment', label: %q{"commented#{weight > 0 ? ' positively' : weight < 0 ? ' negatively' : ''}"}, weight: 0)
-    event_types.create!(key: 'volumechange', label: %q{"changed the volume to #{data.volume}"}, weight: 0)
+    event_types.create!(key: 'volumechange', label: %q{"changed the volume to #{(data['volume']*100).to_i}"}, weight: 0)
     event_types.create!(key: 'like', label: %q{'liked the video'}, weight: 2)
     event_types.create!(key: 'unlike', label: %q{'unliked the video'}, weight: -2)
   end

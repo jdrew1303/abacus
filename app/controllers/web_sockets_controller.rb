@@ -5,8 +5,12 @@ class WebSocketsController < WebsocketRails::BaseController
 
   def exceptionally_wrapper
     yield
-  rescue Error => error
+  rescue Exception => error
     exceptionally_handler(error)
+  rescue ArgumentError => error2
+    exceptionally_handler(error2)
+  rescue Exceptionally::Error => error3
+    exceptionally_handler(error3)
   end
 
   def authenticate_app
